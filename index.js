@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import attendanceRoutes from "./routes/attendanceRoutes.js";
+
 
 dotenv.config();
 const app = express();
@@ -16,6 +18,8 @@ connectDB();
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/attendance", attendanceRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("🚀 Smart Attendance Backend Running");
