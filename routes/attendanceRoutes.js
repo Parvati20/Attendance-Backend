@@ -1,10 +1,13 @@
 import express from "express";
-import { markAttendance } from "../controllers/attendanceController.js";
+import { markAttendance, getTodayStatus } from "../controllers/attendanceController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Protected route (only logged-in users)
+// ✅ Mark attendance (when student scans QR)
 router.post("/mark", protect, markAttendance);
+
+// ✅ Get today's attendance status (Present, Leave, Kitchen, or No Status)
+router.get("/today", protect, getTodayStatus);
 
 export default router;
