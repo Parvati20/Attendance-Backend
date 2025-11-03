@@ -4,6 +4,10 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
+import kitchenRoutes from "./routes/kitchenRoutes.js";
+import leaveRoutes from "./routes/leaveRoutes.js";  // ✅ Add this line
+
+
 
 
 dotenv.config();
@@ -19,6 +23,8 @@ connectDB();
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/kitchen", kitchenRoutes);
+app.use("/api/leave", leaveRoutes);
 
 
 app.get("/", (req, res) => {
