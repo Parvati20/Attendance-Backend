@@ -7,7 +7,7 @@ export const applyLeave = async (req, res) => {
     const studentId = req.user.id;
     const { startDate, endDate, reason, typeOfLeave } = req.body;
 
-    // Validate
+    
     if (!startDate || !endDate || !reason || !typeOfLeave) {
       return res.status(400).json({ message: "All fields are required." });
     }
@@ -17,11 +17,10 @@ export const applyLeave = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Format dates
+    
     const start = moment(startDate).format("YYYY-MM-DD");
     const end = moment(endDate).format("YYYY-MM-DD");
 
-    // Prevent overlapping leaves
     const existingLeave = await Leave.findOne({
       studentId,
       $or: [{ startDate: { $lte: end }, endDate: { $gte: start } }],
@@ -33,7 +32,6 @@ export const applyLeave = async (req, res) => {
         .json({ message: "You already have a leave during this period." });
     }
 
-    // Create leave entry
     const leave = new Leave({
       studentId,
       name: user.name,
@@ -53,5 +51,24 @@ export const applyLeave = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+export const getMyLeaves = async (req, res) => {
+  try {
+    const studentId = req.user.id; 
+
+    const leaves = await Leave.find({ studentId }).sort({ createdAt: -1 });
+
+    if (!leaves.length) {
+      return res.status(200).json({ message: "No leave records found." });
+    }
+
+    res.status(200).json({
+      count: leaves.length,
+      leaves,
+    });
+  } catch (error) {
+    console.error("Error fetching leave records:", error);
+    res.status(500).json({ message: "Server error while fetching leaves." });
   }
 };

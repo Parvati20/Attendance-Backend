@@ -1,9 +1,11 @@
 import express from "express";
-import { applyLeave } from "../controllers/leaveController.js";
+import { applyLeave, getMyLeaves } from "../controllers/leaveController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.post("/apply", protect, applyLeave);
+
+router.get("/my-leaves", protect, getMyLeaves);
 
 export default router;
