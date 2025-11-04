@@ -3,20 +3,29 @@ import moment from "moment";
 
 export const markKitchenTurn = async (req, res) => {
   try {
-    const studentId = req.user.id;
-    const today = moment().format("YYYY-MM-DD");
+    const studentId = req.user._id;
+    const { name, email, date } = req.body;
 
-    const alreadyMarked = await Kitchen.findOne({ studentId, date: today });
-    if (alreadyMarked) {
-      return res.status(400).json({ message: "Kitchen turn already marked today." });
+    if (!name || !email || !date) {
+      return res.status(400).json({ message: "All fields are required." });
     }
 
-    const kitchenTurn = new Kitchen({ studentId, date: today });
-    await kitchenTurn.save();
+    const alreadyMarked = await Kitchen.findOne({ studentId, date });
+    if (alreadyMarked) {
+      return res.status(400).json({ message: "Kitchen turn already marked for this date." });
+    }
 
-    res.status(201).json({ message: "Kitchen turn marked successfully!" });
+    const kitchenTurn = new Kitchen({
+      studentId,
+      name,
+      email,
+      date,
+    });
+
+    await kitchenTurn.save();
+    res.status(201).json({ message: "✅ Kitchen turn marked successfully!" });
   } catch (error) {
-    console.error(error);
+    console.error("Error in markKitchenTurn:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
