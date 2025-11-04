@@ -13,6 +13,8 @@ const attendanceSchema = new mongoose.Schema(
       type: String, 
       required: true,
     },
+    
+
     status: {
       type: String,
       enum: ["Present", "Absent", "Leave", "Kitchen"],
