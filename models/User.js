@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Student", "Admin"], // ✅ allow both roles
+      enum: ["Student", "Admin"], 
       default: "Student",
     },
   },
