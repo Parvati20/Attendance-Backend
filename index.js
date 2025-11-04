@@ -8,6 +8,7 @@ import kitchenRoutes from "./routes/kitchenRoutes.js";
 import leaveRoutes from "./routes/leaveRoutes.js";  
 import correctionRoutes from "./routes/correctionRoutes.js";
 import trackingRoutes from "./routes/trackingRoutes.js";
+import historyRoutes from "./routes/historyRoutes.js";
 
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use("/api/kitchen", kitchenRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/correction", correctionRoutes);
 app.use("/api/tracking", trackingRoutes);
+app.use("/api/history", historyRoutes);
 
 app.get("/", (req, res) => {
   res.send(" Smart Attendance Backend Running");
