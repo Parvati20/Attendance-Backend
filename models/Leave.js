@@ -32,6 +32,7 @@ const leaveSchema = new mongoose.Schema(
         "Casual Leave",
         "Period Leave",
         "Special Occasion Leave",
+        "Documentation Leave",
       ],
       required: true,
     },
