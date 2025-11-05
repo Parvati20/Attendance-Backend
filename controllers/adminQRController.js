@@ -1,85 +1,89 @@
-
-
 import QRCode from "qrcode";
 import moment from "moment";
 import QRSession from "../models/QRSession.js";
 
+/**
+ * 🧩 Generate QR (valid 9:00–9:20 AM)
+ */
 export const generateQR = async (req, res) => {
   try {
     const now = moment();
-    const expiry = moment().set({ hour: 9, minute: 20, second: 0 });
+    const startAt = moment().set({ hour: 9, minute: 0, second: 0 });
+    const endAt = moment().set({ hour: 9, minute: 20, second: 0 });
 
-    await QRSession.updateMany({ active: true }, { active: false });
+    // Expire all previous active QRs
+    await QRSession.updateMany({ status: "active" }, { status: "expired" });
 
-    const token = `${req.user._id}-${Date.now()}`;
     const qrData = {
-      token,
       date: now.format("YYYY-MM-DD"),
-      validTill: expiry.format("HH:mm:ss"),
-      generatedBy: req.user.name,
+      validFrom: startAt.format("HH:mm"),
+      validTill: endAt.format("HH:mm"),
     };
 
     const qrImage = await QRCode.toDataURL(JSON.stringify(qrData));
 
-    await QRSession.create({
-      token,
-      startAt: now.toDate(),
-      endAt: expiry.toDate(),
-      active: true,
+    const newQR = await QRSession.create({
+      qrImage,
+      startAt,
+      endAt,
       generatedBy: req.user._id,
+      status: "active",
     });
 
     res.status(201).json({
-      message: "QR Code generated successfully",
+      success: true,
+      message: "QR generated successfully",
       qrImage,
-      validTill: expiry.format("hh:mm A"),
+      validFrom: startAt.format("hh:mm A"),
+      validTill: endAt.format("hh:mm A"),
+      status: newQR.status,
     });
   } catch (error) {
-    console.error("QR Generate Error:", error);
+    console.error("QR Generation Error:", error);
     res.status(500).json({ message: "Server error while generating QR" });
   }
 };
 
-// GET – Get current active QR if still valid
+/**
+ * 🕒 Get current QR (auto-expire if past 9:20 AM)
+ */
 export const getCurrentQR = async (req, res) => {
   try {
-    const now = moment();
-    const qr = await QRSession.findOne({ active: true }).sort({ createdAt: -1 });
-
+    const qr = await QRSession.findOne().sort({ createdAt: -1 });
     if (!qr) {
-      return res.status(404).json({ message: "No active QR found" });
+      return res.status(404).json({ message: "No QR found" });
     }
 
-    // Check if expired by time
-    if ( now.isAfter(moment(qr.endAt)) ) {
-      qr.active = false;
+    const now = moment();
+    if (now.isAfter(moment(qr.endAt)) && qr.status === "active") {
+      qr.status = "expired";
       await qr.save();
-      return res.status(404).json({ message: "QR has expired" });
     }
 
-    // Still valid
     res.status(200).json({
-      token: qr.token,
-      startAt: qr.startAt,
-      endAt: qr.endAt,
+      qrImage: qr.qrImage,
+      validFrom: moment(qr.startAt).format("hh:mm A"),
+      validTill: moment(qr.endAt).format("hh:mm A"),
+      status: qr.status,
     });
   } catch (error) {
     console.error("Get Current QR Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error fetching QR" });
   }
 };
 
-// PUT – Expire a specific QR manually
+/**
+ * ⛔ Expire QR manually (Admin only)
+ */
 export const expireQR = async (req, res) => {
   try {
     const { id } = req.params;
     const qr = await QRSession.findById(id);
-
     if (!qr) {
       return res.status(404).json({ message: "QR not found" });
     }
 
-    qr.active = false;
+    qr.status = "expired";
     await qr.save();
 
     res.status(200).json({ message: "QR expired successfully" });
