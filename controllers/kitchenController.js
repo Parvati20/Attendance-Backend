@@ -26,7 +26,7 @@ export const markKitchenTurn = async (req, res) => {
     });
 
     await kitchenTurn.save();
-    res.status(201).json({ message: "✅ Kitchen turn marked successfully!" });
+    res.status(201).json({ message: " Kitchen turn marked successfully!" });
   } catch (error) {
     console.error("Error in markKitchenTurn:", error);
     res.status(500).json({ message: "Server error, please try again later." });

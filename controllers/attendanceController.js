@@ -60,17 +60,14 @@ export const getTodayStatus = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-// ✅ Verify QR Code (temporary fake verification)
 export const verifyQR = async (req, res) => {
   try {
     const { token } = req.query;
 
-    // abhi ke liye koi real check nahi, sirf valid dikhayenge
     if (!token) {
       return res.status(400).json({ valid: false, message: "QR token is missing." });
     }
 
-    // (Later: yahan check karenge ki QR expired ya fake to nahi)
     return res.status(200).json({
       valid: true,
       message: "QR verified successfully. You can mark attendance now.",
