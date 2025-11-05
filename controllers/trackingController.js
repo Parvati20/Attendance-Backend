@@ -15,6 +15,7 @@ export const addTracking = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+    
 
     const formattedDate = moment(date).format("YYYY-MM-DD");
 
