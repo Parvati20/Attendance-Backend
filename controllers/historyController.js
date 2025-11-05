@@ -32,7 +32,7 @@ export const getViewHistory = async (req, res) => {
     }));
 
     res.status(200).json({
-      message: "Student history fetched successfully ✅",
+      message: "Student history fetched successfully ",
       data: {
         totalPresent,
         totalAbsent,

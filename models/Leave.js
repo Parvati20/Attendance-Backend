@@ -12,7 +12,11 @@ const leaveSchema = new mongoose.Schema(
       required: true,
     },
     startDate: {
-      type: String, // YYYY-MM-DD
+      type: String, 
+      required: true,
+    },
+    endDate: {
+      type: String,
       required: true,
     },
     endDate: {
@@ -46,3 +50,4 @@ const leaveSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Leave", leaveSchema);
+
