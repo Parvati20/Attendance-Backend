@@ -20,9 +20,9 @@ export const requestCorrection = async (req, res) => {
 
     const existing = await Correction.findOne({ studentId, date: formattedDate });
     if (existing) {
-      return res
-        .status(400)
-        .json({ message: "You already submitted a correction request for this date." });
+      return res.status(400).json({
+        message: "You already submitted a correction request for this date."
+      });
     }
 
     const correction = new Correction({
@@ -40,6 +40,18 @@ export const requestCorrection = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating correction request:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+export const getMyCorrections = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const corrections = await Correction.find({ studentId }).sort({ createdAt: -1 });
+    res.status(200).json({ data: corrections });
+  } catch (error) {
+    console.error("Error fetching corrections:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
