@@ -1,5 +1,3 @@
-
-
 import express from "express";
 import {
   generateQR,
@@ -10,13 +8,9 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Generate QR (admin only)
+// Only admin (Sweta & Parvati) can access
 router.post("/generate", protect, adminOnly, generateQR);
-
-// Get current QR (anyone can view — optional protect)
-router.get("/current", protect, getCurrentQR);
-
-// Expire QR manually
+router.get("/current", protect, adminOnly, getCurrentQR);
 router.put("/expire/:id", protect, adminOnly, expireQR);
 
 export default router;
