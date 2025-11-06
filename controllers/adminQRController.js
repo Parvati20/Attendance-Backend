@@ -3,19 +3,15 @@ import moment from "moment";
 import QRSession from "../models/QRSession.js";
 import { v4 as uuidv4 } from "uuid";
 
-/**
- * 🧩 Generate QR (active 9:00–9:20 AM)
- */
+
 export const generateQR = async (req, res) => {
   try {
     const now = moment();
     const startAt = moment().set({ hour: 9, minute: 0, second: 0 });
     const endAt = moment().set({ hour: 9, minute: 20, second: 0 });
 
-    // Expire all previous active QRs
     await QRSession.updateMany({ status: "active" }, { status: "expired" });
 
-    // Unique token
     const token = uuidv4();
 
     const qrData = {
@@ -26,10 +22,8 @@ export const generateQR = async (req, res) => {
       generatedBy: req.user.name,
     };
 
-    // Generate QR image (Base64)
     const qrImage = await QRCode.toDataURL(JSON.stringify(qrData));
 
-    // Save new session
     const newQR = await QRSession.create({
       token,
       qrImage,
@@ -57,16 +51,13 @@ export const generateQR = async (req, res) => {
   }
 };
 
-/**
- * 🕒 Get current QR (auto-expire if past 9:20)
- */
+
 export const getCurrentQR = async (req, res) => {
   try {
     const qr = await QRSession.findOne().sort({ createdAt: -1 });
     if (!qr) return res.status(404).json({ message: "No QR found" });
 
     const now = moment();
-    // Auto expire after 9:20 AM
     if (moment(now).isAfter(qr.endAt) && qr.status === "active") {
       qr.status = "expired";
       await qr.save();
@@ -85,9 +76,7 @@ export const getCurrentQR = async (req, res) => {
   }
 };
 
-/**
- * ⛔ Expire QR manually (admin only)
- */
+
 export const expireQR = async (req, res) => {
   try {
     const { id } = req.params;

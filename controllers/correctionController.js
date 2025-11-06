@@ -3,11 +3,7 @@ import Attendance from "../models/Attendance.js";
 import User from "../models/User.js";
 import moment from "moment";
 
-/* ===========================================================
-   STUDENT: Create a new correction request
-   Endpoint: POST /api/correction/request
-   Auth: Student (protect)
-=========================================================== */
+
 export const requestCorrection = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -50,11 +46,7 @@ export const requestCorrection = async (req, res) => {
   }
 };
 
-/* ===========================================================
-   STUDENT: Get logged-in student's corrections
-   Endpoint: GET /api/correction/my
-   Auth: Student (protect)
-=========================================================== */
+
 export const getMyCorrections = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -66,11 +58,7 @@ export const getMyCorrections = async (req, res) => {
   }
 };
 
-/* ===========================================================
-   ADMIN: Get all correction requests
-   Endpoint: GET /api/correction/admin
-   Auth: Admin (protect + adminOnly)
-=========================================================== */
+
 export const getAllCorrections = async (req, res) => {
   try {
     const corrections = await Correction.find()
@@ -84,24 +72,17 @@ export const getAllCorrections = async (req, res) => {
   }
 };
 
-/* ===========================================================
-   ADMIN: Approve or Reject correction
-   Endpoint: PUT /api/correction/admin/:id
-   Auth: Admin (protect + adminOnly)
-=========================================================== */
+
 export const updateCorrectionStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("🟡 Received body:", req.body); // helpful for debugging
-
-    // Support both 'action' or 'status' keys
+    console.log("🟡 Received body:", req.body); 
     const action = req.body.action || req.body.status;
 
     if (!["Approved", "Rejected"].includes(action)) {
       return res.status(400).json({ message: "Invalid action. Use 'Approved' or 'Rejected'." });
     }
 
-    // ✅ Find correction
     const correction = await Correction.findById(id);
     if (!correction) {
       return res.status(404).json({ message: "Correction not found." });
@@ -110,7 +91,6 @@ export const updateCorrectionStatus = async (req, res) => {
     correction.status = action;
     await correction.save();
 
-    // ✅ If approved, mark attendance as "Present"
     if (action === "Approved") {
       const formattedDate = moment(correction.date).format("YYYY-MM-DD");
 
