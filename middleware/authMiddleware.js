@@ -1,9 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-/**
- * 🔐 Protect Middleware — verifies JWT and attaches user
- */
+
 export const protect = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -25,9 +23,6 @@ export const protect = async (req, res, next) => {
   }
 };
 
-/**
- * 🧠 Admin Only Middleware — allows only Admin role
- */
 export const adminOnly = (req, res, next) => {
   try {
     if (req.user && req.user.role === "Admin") {
