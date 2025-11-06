@@ -87,3 +87,38 @@ export const verifyQR = async (req, res) => {
   }
 };
 
+export const getYesterdayStatus = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const yesterday = moment().subtract(1, "days").format("YYYY-MM-DD");
+
+    const attendance = await Attendance.findOne({ studentId, date: yesterday });
+    if (attendance) {
+      return res.status(200).json({
+        status: attendance.status,
+        source: attendance.source || "Self",
+      });
+    }
+
+    const kitchen = await Kitchen.findOne({ studentId, date: yesterday });
+    if (kitchen) {
+      return res.status(200).json({ status: "Kitchen Turn" });
+    }
+
+    const leave = await Leave.findOne({
+      studentId,
+      startDate: { $lte: yesterday },
+      endDate: { $gte: yesterday },
+    });
+    if (leave) {
+      return res.status(200).json({
+        status: `On Leave (${leave.status})`,
+      });
+    }
+
+    return res.status(200).json({ status: "No Status (Yesterday)" });
+  } catch (error) {
+    console.error("Error fetching yesterday's status:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
