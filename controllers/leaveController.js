@@ -1,27 +1,28 @@
-
-
 import Leave from "../models/Leave.js";
 import User from "../models/User.js";
 import Attendance from "../models/Attendance.js";
 import moment from "moment";
 
-/**
- */
+// 🧑‍🎓 Apply Leave (Student)
 export const applyLeave = async (req, res) => {
   try {
     const studentId = req.user.id;
     const { startDate, endDate, reason, typeOfLeave } = req.body;
 
+    // Validate required fields
     if (!startDate || !endDate || !reason || !typeOfLeave) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
+    // Check if user exists
     const user = await User.findById(studentId);
     if (!user) return res.status(404).json({ message: "User not found." });
 
+    // Format dates
     const start = moment(startDate).format("YYYY-MM-DD");
     const end = moment(endDate).format("YYYY-MM-DD");
 
+    // Check for overlapping leaves
     const existingLeave = await Leave.findOne({
       studentId,
       $or: [
@@ -35,10 +36,10 @@ export const applyLeave = async (req, res) => {
       });
     }
 
+    // Create new leave request
     const leave = new Leave({
       studentId,
       name: user.name,
-      studentEmail: user.email,
       startDate: start,
       endDate: end,
       reason,
@@ -58,6 +59,7 @@ export const applyLeave = async (req, res) => {
   }
 };
 
+// 📋 Get My Leaves (Student)
 export const getMyLeaves = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -73,6 +75,7 @@ export const getMyLeaves = async (req, res) => {
   }
 };
 
+// 🧑‍💼 Get All Leaves (Admin)
 export const getAllLeaves = async (req, res) => {
   try {
     const leaves = await Leave.find().sort({ createdAt: -1 });
@@ -83,7 +86,7 @@ export const getAllLeaves = async (req, res) => {
   }
 };
 
-
+// ✏️ Update Leave Status (Admin)
 export const updateLeaveStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -95,18 +98,19 @@ export const updateLeaveStatus = async (req, res) => {
 
     const leave = await Leave.findByIdAndUpdate(
       id,
-      { $set: { status } },   
-      { new: true, runValidators: false }  
+      { $set: { status } },
+      { new: true, runValidators: false }
     );
 
     if (!leave) {
       return res.status(404).json({ message: "Leave not found." });
     }
 
-   
+    // Mark attendance if approved
     if (status === "Approved") {
       const { studentId, startDate, endDate } = leave;
       const dates = getDatesBetween(startDate, endDate);
+
       for (const date of dates) {
         await Attendance.findOneAndUpdate(
           { studentId, date },
@@ -126,7 +130,7 @@ export const updateLeaveStatus = async (req, res) => {
   }
 };
 
-
+// 🗓️ Helper: Get all dates between two dates
 function getDatesBetween(start, end) {
   const dates = [];
   let curr = new Date(start);
@@ -137,4 +141,5 @@ function getDatesBetween(start, end) {
   }
   return dates;
 }
+
 
