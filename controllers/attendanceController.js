@@ -92,6 +92,7 @@ export const getYesterdayStatus = async (req, res) => {
     const studentId = req.user.id;
     const yesterday = moment().subtract(1, "days").format("YYYY-MM-DD");
 
+    // 1️⃣ Check attendance for yesterday
     const attendance = await Attendance.findOne({ studentId, date: yesterday });
     if (attendance) {
       return res.status(200).json({
@@ -100,25 +101,29 @@ export const getYesterdayStatus = async (req, res) => {
       });
     }
 
+    // 2️⃣ Check if it was a kitchen turn
     const kitchen = await Kitchen.findOne({ studentId, date: yesterday });
     if (kitchen) {
       return res.status(200).json({ status: "Kitchen Turn" });
     }
 
+    // 3️⃣ Check if student was on leave
     const leave = await Leave.findOne({
       studentId,
       startDate: { $lte: yesterday },
       endDate: { $gte: yesterday },
     });
+
     if (leave) {
       return res.status(200).json({
         status: `On Leave (${leave.status})`,
       });
     }
 
+    // 4️⃣ Default
     return res.status(200).json({ status: "No Status (Yesterday)" });
   } catch (error) {
     console.error("Error fetching yesterday's status:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error while fetching yesterday's status." });
   }
 };
