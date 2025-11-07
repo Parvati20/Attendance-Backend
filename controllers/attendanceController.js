@@ -1,3 +1,4 @@
+
 import Attendance from "../models/Attendance.js";
 import QRSession from "../models/QRSession.js";
 import Kitchen from "../models/Kitchen.js";
@@ -9,7 +10,6 @@ import moment from "moment";
 export const markAttendance = async (req, res) => {
   try {
     const studentId = req.user.id;
-    const today = moment().format("YYYY-MM-DD");
 
     const alreadyMarked = await Attendance.findOne({ studentId, date: today });
     if (alreadyMarked) {
@@ -182,7 +182,10 @@ export const validateQRandMark = async (req, res) => {
       attendance,
     });
   } catch (error) {
-    console.error("QR validation error:", error);
-    res.status(500).json({ success: false, message: "Server error validating QR" });
+    console.error("Error fetching today status:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+
