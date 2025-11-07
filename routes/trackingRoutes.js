@@ -1,4 +1,3 @@
-// trackingRoutes.js
 import express from "express";
 import multer from "multer";
 import { addTracking } from "../controllers/trackingController.js";

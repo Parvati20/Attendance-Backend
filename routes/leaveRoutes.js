@@ -1,7 +1,4 @@
 
-
-
-
 import express from "express";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 import { applyLeave, approveLeave, rejectLeave, getAllLeaves } from "../controllers/leaveController.js";
