@@ -29,15 +29,32 @@ export const validateQRandMark = async (req, res) => {
       return res.status(400).json({ success: false, message: "QR expired or invalid" });
     }
 
-    const now = moment();
-    if (now.isBefore(qr.startAt) || now.isAfter(qr.endAt)) {
-      return res.status(400).json({ success: false, message: "QR not valid at this time" });
+    return res.status(200).json({
+      valid: true,
+      message: "QR verified successfully. You can mark attendance now.",
+    });
+  } catch (error) {
+    console.error("QR verification error:", error);
+    res.status(500).json({ valid: false, message: "Server error." });
+  }
+};
+
+export const getYesterdayStatus = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const yesterday = moment().subtract(1, "days").format("YYYY-MM-DD");
+
+    const attendance = await Attendance.findOne({ studentId, date: yesterday });
+    if (attendance) {
+      return res.status(200).json({
+        status: attendance.status,
+        source: attendance.source || "Self",
+      });
     }
 
-   
-    const already = await Attendance.findOne({ studentId, date: today });
-    if (already) {
-      return res.status(400).json({ success: false, message: "Already marked today" });
+    const kitchen = await Kitchen.findOne({ studentId, date: yesterday });
+    if (kitchen) {
+      return res.status(200).json({ status: "Kitchen Turn" });
     }
 
    

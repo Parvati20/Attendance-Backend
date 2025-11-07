@@ -32,6 +32,7 @@ app.use("/api/history", historyRoutes);
 app.use("/api/admin/qr", adminQRRoutes);
 
 
+
 app.get("/", (req, res) => {
   res.send(" Smart Attendance Backend Running");
 });

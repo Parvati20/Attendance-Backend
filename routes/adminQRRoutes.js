@@ -8,7 +8,6 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Only admin (Sweta & Parvati) can access
 router.post("/generate", protect, adminOnly, generateQR);
 router.get("/current", protect, adminOnly, getCurrentQR);
 router.put("/expire/:id", protect, adminOnly, expireQR);
