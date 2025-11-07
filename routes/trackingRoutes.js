@@ -1,19 +1,12 @@
+// trackingRoutes.js
 import express from "express";
+import multer from "multer";
 import { addTracking } from "../controllers/trackingController.js";
 import { protect } from "../middleware/authMiddleware.js";
-import multer from "multer";
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
-
-const upload = multer({ storage: multer.memoryStorage() }); 
-
-
-router.post(
-    "/add", 
-    protect, 
-    upload.single('document'), 
-    addTracking
-);
+router.post("/add", protect, upload.single("document"), addTracking);
 
 export default router;

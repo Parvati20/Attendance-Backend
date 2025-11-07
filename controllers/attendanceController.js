@@ -92,7 +92,6 @@ export const getYesterdayStatus = async (req, res) => {
     const studentId = req.user.id;
     const yesterday = moment().subtract(1, "days").format("YYYY-MM-DD");
 
-    // 1️⃣ Check attendance for yesterday
     const attendance = await Attendance.findOne({ studentId, date: yesterday });
     if (attendance) {
       return res.status(200).json({
@@ -101,7 +100,6 @@ export const getYesterdayStatus = async (req, res) => {
       });
     }
 
-    // 2️⃣ Check if it was a kitchen turn
     const kitchen = await Kitchen.findOne({ studentId, date: yesterday });
     if (kitchen) {
       return res.status(200).json({ status: "Kitchen Turn" });

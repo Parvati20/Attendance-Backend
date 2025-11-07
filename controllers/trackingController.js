@@ -1,51 +1,35 @@
 import Tracking from "../models/Tracking.js";
-import User from "../models/User.js";
 import moment from "moment";
 
 export const addTracking = async (req, res) => {
-  try {
-    const studentId = req.user.id;
-    
-   
-    const { fullName, email, date, studentType } = req.body; 
-    const uploadedFile = req.file; 
+  try {
+    const studentId = req.user._id; // from JWT middleware
+    const { fullName, email, date, studentType } = req.body; // frontend sends fullName
+    const uploadedFile = req.file;
 
-    if (!date || !studentType || !fullName || !email) {
-      return res.status(400).json({ message: "All required fields are missing." });
-    }
-
-    const user = await User.findById(studentId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-    
-    
-    let documentUrl = '';
-    if (uploadedFile) {
-      
-      
-        documentUrl = uploadedFile.originalname;
+    // Validate required fields
+    if (!fullName || !email || !date || !studentType) {
+      return res.status(400).json({ message: "All required fields are missing." });
     }
 
-    const formattedDate = moment(date).format("YYYY-MM-DD");
+    const tracking = new Tracking({
+      studentId,
+      name: fullName, // map fullName from frontend to schema name
+      email,
+      date: moment(date).format("YYYY-MM-DD"),
+      status: studentType,
+      document: uploadedFile ? uploadedFile.originalname : "",
+    });
 
-    const tracking = new Tracking({
-      studentId,
-      name: fullName, 
-      email: email,
-      date: formattedDate,
-      status: studentType, 
-      document: documentUrl, 
-    });
+    await tracking.save();
 
-    await tracking.save();
+    res.status(201).json({
+      message: "Student lifecycle entry added successfully!",
+      tracking,
+    });
 
-    res.status(201).json({
-      message: "Student lifecycle entry added successfully!",
-      tracking,
-    });
-  } catch (error) {
-    console.error("Error adding tracking entry:", error);
-    res.status(500).json({ message: "Server error during file/tracking submission." });
-  }
+  } catch (err) {
+    console.error("Error adding tracking entry:", err);
+    res.status(500).json({ message: "Server error during tracking submission." });
+  }
 };
