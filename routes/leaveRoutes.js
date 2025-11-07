@@ -9,8 +9,6 @@ import {
 } from "../controllers/leaveController.js";
 
 const router = express.Router();
-
-// Student routes
 router.post("/apply", protect, applyLeave);
 router.get("/my-leaves", protect, getMyLeaves); // Student's own leaves
 
