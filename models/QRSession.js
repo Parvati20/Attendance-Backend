@@ -2,15 +2,26 @@ import mongoose from "mongoose";
 
 const qrSessionSchema = new mongoose.Schema(
   {
-    token: { type: String, required: true, unique: true }, // unique token
-    qrImage: { type: String, required: true }, // base64 image
-    startAt: { type: Date, required: true }, // 9:00 AM
-    endAt: { type: Date, required: true },   // 9:20 AM
+    token: { type: String, required: true, unique: true }, 
+    qrImage: { type: String, required: true }, 
+
+   
+    startAt: { type: Date, required: true }, 
+    endAt: { type: Date, required: true },   
+
+  
     status: {
       type: String,
       enum: ["active", "expired"],
       default: "active",
     },
+
+    date: {
+      type: String, 
+      required: true,
+    },
+
+   
     generatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -18,5 +29,22 @@ const qrSessionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+
+qrSessionSchema.pre("save", function (next) {
+  const qr = this;
+  const now = new Date();
+
+ 
+  const qrDate = new Date(qr.date);
+  if (
+    qr.status === "active" &&
+    (now.toDateString() !== qrDate.toDateString() || now > qr.endAt)
+  ) {
+    qr.status = "expired";
+  }
+
+  next();
+});
 
 export default mongoose.model("QRSession", qrSessionSchema);
