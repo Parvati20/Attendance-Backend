@@ -12,10 +12,9 @@ const router = express.Router();
 router.post("/apply", protect, applyLeave);
 router.get("/my-leaves", protect, getMyLeaves); // Student's own leaves
 
-// Admin routes
-router.get("/all", protect, adminOnly, getAllLeaves);// Get all leaves
-router.put("/approve/:id", protect, adminOnly, approveLeave);
-router.put("/reject/:id", protect, adminOnly, rejectLeave);
+router.get("/all", protect, getAllLeaves);// Get all leaves
+router.put("/approve/:id", protect, approveLeave);
+router.put("/reject/:id", protect, rejectLeave);
 
 export default router;
 
