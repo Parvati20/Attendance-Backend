@@ -17,3 +17,4 @@ router.get("/admin", protect, adminOnly, getAllCorrections);
 router.put("/admin/:id", protect, adminOnly, updateCorrectionStatus);
 
 export default router;
+
