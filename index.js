@@ -8,7 +8,7 @@ import kitchenRoutes from "./routes/kitchenRoutes.js";
 import leaveRoutes from "./routes/leaveRoutes.js";  
 import correctionRoutes from "./routes/correctionRoutes.js";
 import trackingRoutes from "./routes/trackingRoutes.js";
-import historyRoutes from "./routes/historyRoutes.js";
+import studentRoutes from "./routes/studentRoutes.js";
 import adminQRRoutes from "./routes/adminQRRoutes.js";
 
 
@@ -28,7 +28,7 @@ app.use("/api/kitchen", kitchenRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/correction", correctionRoutes);
 app.use("/api/tracking", trackingRoutes);
-app.use("/api/history", historyRoutes);
+app.use("/api/student", studentRoutes);
 app.use("/api/admin/qr", adminQRRoutes);
 
 
