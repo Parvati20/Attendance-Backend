@@ -8,8 +8,6 @@ import {
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
-
-
 router.post("/request", protect, requestCorrection);
 router.get("/my", protect, getMyCorrections);
 
