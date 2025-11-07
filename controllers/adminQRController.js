@@ -3,14 +3,14 @@ import moment from "moment";
 import QRSession from "../models/QRSession.js";
 import { v4 as uuidv4 } from "uuid";
 
-
+// Generate a new QR
 export const generateQR = async (req, res) => {
   try {
     const now = moment();
     const startAt = moment().set({ hour: 9, minute: 0, second: 0 });
-    const endAt = moment().set({ hour: 22, minute: 0, second: 0 }); 
+    const endAt = moment().set({ hour: 22, minute: 0, second: 0 });
 
-  
+    // Expire old active QRs
     await QRSession.updateMany({ status: "active" }, { status: "expired" });
 
     const token = uuidv4();
@@ -48,10 +48,9 @@ export const generateQR = async (req, res) => {
   }
 };
 
-
+// Get current active QR
 export const getCurrentQR = async (req, res) => {
   try {
- 
     const qr = await QRSession.findOne().sort({ createdAt: -1 });
 
     if (!qr) {
@@ -62,19 +61,11 @@ export const getCurrentQR = async (req, res) => {
     const today = moment().format("YYYY-MM-DD");
     const qrDate = moment(qr.createdAt).format("YYYY-MM-DD");
 
-  
-    if (qrDate !== today && qr.status === "active") {
+    if ((qrDate !== today || moment(now).isAfter(qr.endAt)) && qr.status === "active") {
       qr.status = "expired";
       await qr.save();
     }
 
-   
-    if (moment(now).isAfter(qr.endAt) && qr.status === "active") {
-      qr.status = "expired";
-      await qr.save();
-    }
-
-   
     if (qr.status === "active") {
       return res.status(200).json({
         success: true,
@@ -84,7 +75,6 @@ export const getCurrentQR = async (req, res) => {
         status: qr.status,
       });
     } else {
-    
       return res.status(200).json({
         success: false,
         message: "No active QR currently",
@@ -93,5 +83,23 @@ export const getCurrentQR = async (req, res) => {
   } catch (error) {
     console.error("Get Current QR Error:", error);
     res.status(500).json({ message: "Server error fetching QR" });
+  }
+};
+
+// Expire a QR by ID
+export const expireQR = async (req, res) => {
+  try {
+    const qr = await QRSession.findByIdAndUpdate(
+      req.params.id,
+      { status: "expired" },
+      { new: true }
+    );
+
+    if (!qr) return res.status(404).json({ message: "QR not found" });
+
+    res.status(200).json({ message: "QR expired successfully", qr });
+  } catch (error) {
+    console.error("Expire QR Error:", error);
+    res.status(500).json({ message: "Server error while expiring QR" });
   }
 };
