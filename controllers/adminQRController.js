@@ -1,105 +1,84 @@
-import QRCode from "qrcode";
-import moment from "moment";
-import QRSession from "../models/QRSession.js";
-import { v4 as uuidv4 } from "uuid";
 
-// Generate a new QR
+
+import QRSession from "../models/QRSession.js";
+import moment from "moment";
+import QRCode from "qrcode";
+
+// Generate QR
 export const generateQR = async (req, res) => {
   try {
     const now = moment();
     const startAt = moment().set({ hour: 9, minute: 0, second: 0 });
     const endAt = moment().set({ hour: 22, minute: 0, second: 0 });
 
-    // Expire old active QRs
+    // Only allow generation 2 mins before 9 AM
+    if (now.isBefore(startAt.clone().subtract(2, "minutes"))) {
+      return res.status(400).json({ message: "Too early to generate QR" });
+    }
+
+    // Expire old QR
     await QRSession.updateMany({ status: "active" }, { status: "expired" });
 
-    const token = uuidv4();
-    const qrData = {
-      token,
-      date: now.format("YYYY-MM-DD"),
-      validFrom: startAt.format("HH:mm"),
-      validTill: endAt.format("HH:mm"),
-      generatedBy: req.user.name,
-    };
+    const token = Math.random().toString(36).substring(2, 12);
+    const qrImage = await QRCode.toDataURL(token);
 
-    const qrImage = await QRCode.toDataURL(JSON.stringify(qrData));
-
-    const newQR = await QRSession.create({
+    const qr = await QRSession.create({
       token,
       qrImage,
-      startAt,
-      endAt,
-      status: "active",
+      startAt: startAt.toDate(),
+      endAt: endAt.toDate(),
+      date: now.format("YYYY-MM-DD"),
       generatedBy: req.user._id,
     });
 
     res.status(201).json({
-      success: true,
-      message: "✅ QR generated successfully",
-      qrImage,
-      token,
-      validFrom: startAt.format("hh:mm A"),
-      validTill: endAt.format("hh:mm A"),
-      status: newQR.status,
+      qrImage: qr.qrImage,
+      validFrom: qr.startAt,
+      validTill: qr.endAt,
+      status: qr.status,
+      token: qr.token,
     });
   } catch (error) {
-    console.error("QR Generation Error:", error);
-    res.status(500).json({ message: "Server error while generating QR" });
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
-// Get current active QR
+// Get current QR
 export const getCurrentQR = async (req, res) => {
   try {
-    const qr = await QRSession.findOne().sort({ createdAt: -1 });
+    const qr = await QRSession.findOne({ status: "active" }).sort({ createdAt: -1 });
+    if (!qr) return res.json({ message: "No active QR" });
 
-    if (!qr) {
-      return res.status(404).json({ message: "No QR generated yet" });
-    }
+    if (qr.checkAndExpire()) await qr.save();
 
-    const now = moment();
-    const today = moment().format("YYYY-MM-DD");
-    const qrDate = moment(qr.createdAt).format("YYYY-MM-DD");
-
-    if ((qrDate !== today || moment(now).isAfter(qr.endAt)) && qr.status === "active") {
-      qr.status = "expired";
-      await qr.save();
-    }
-
-    if (qr.status === "active") {
-      return res.status(200).json({
-        success: true,
-        qrImage: qr.qrImage,
-        validFrom: moment(qr.startAt).format("hh:mm A"),
-        validTill: moment(qr.endAt).format("hh:mm A"),
-        status: qr.status,
-      });
-    } else {
-      return res.status(200).json({
-        success: false,
-        message: "No active QR currently",
-      });
-    }
+    res.json({
+      qrImage: qr.qrImage,
+      validFrom: qr.startAt,
+      validTill: qr.endAt,
+      status: qr.status,
+      token: qr.token,
+    });
   } catch (error) {
-    console.error("Get Current QR Error:", error);
-    res.status(500).json({ message: "Server error fetching QR" });
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
-// Expire a QR by ID
+// Expire QR manually
 export const expireQR = async (req, res) => {
   try {
-    const qr = await QRSession.findByIdAndUpdate(
-      req.params.id,
-      { status: "expired" },
-      { new: true }
-    );
-
+    const qr = await QRSession.findById(req.params.id);
     if (!qr) return res.status(404).json({ message: "QR not found" });
 
-    res.status(200).json({ message: "QR expired successfully", qr });
+    qr.status = "expired";
+    await qr.save();
+    res.json({ message: "QR expired successfully" });
   } catch (error) {
-    console.error("Expire QR Error:", error);
-    res.status(500).json({ message: "Server error while expiring QR" });
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
+
+
+
