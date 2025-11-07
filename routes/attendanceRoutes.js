@@ -1,8 +1,9 @@
+
 import express from "express";
 import {
   markAttendance,
   getTodayStatus,
-  getYesterdayStatus,
+  getYesterdayStatus,  
   verifyQR,
   validateQRandMark, 
 } from "../controllers/attendanceController.js";
@@ -12,7 +13,7 @@ const router = express.Router();
 
 router.post("/mark", protect, markAttendance);
 router.get("/today", protect, getTodayStatus);
-router.get("/yesterday", protect, getYesterdayStatus);
+router.get("/yesterday", protect, getYesterdayStatus); 
 router.get("/verify-qr", protect, verifyQR);
 router.post("/validate", protect, validateQRandMark); // ✅ new route
 

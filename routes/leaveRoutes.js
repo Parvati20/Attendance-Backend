@@ -1,32 +1,15 @@
-// import express from "express";
-// import { applyLeave, getMyLeaves } from "../controllers/leaveController.js";
-// import { protect } from "../middleware/authMiddleware.js";
-
-// const router = express.Router();
-
-// router.post("/apply", protect, applyLeave);
-
-// router.get("/my-leaves", protect, getMyLeaves);
-
-// export default router;
 
 import express from "express";
-import {
-  applyLeave,
-  getMyLeaves,
-  getAllLeaves,
-  updateLeaveStatus,
-} from "../controllers/leaveController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
+import { applyLeave, approveLeave, rejectLeave, getAllLeaves } from "../controllers/leaveController.js";
 
 const router = express.Router();
 
-// 🧑‍🎓 Student Routes
 router.post("/apply", protect, applyLeave);
-router.get("/my-leaves", protect, getMyLeaves);
-
-// 🧑‍💼 Admin Routes
-router.get("/all", protect, adminOnly, getAllLeaves);
-router.put("/update-status/:id", protect, adminOnly, updateLeaveStatus);
+router.get("/", protect, adminOnly, getAllLeaves);
+router.put("/approve/:id", protect, adminOnly, approveLeave);
+router.put("/reject/:id", protect, adminOnly, rejectLeave);
 
 export default router;
+
+
